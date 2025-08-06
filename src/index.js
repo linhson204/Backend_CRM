@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const http = require('http');
+const WebSocket = require('ws');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 
 // Import WebSocket logic
-const WebSocket = require('ws');
 
 let server;
 
@@ -613,6 +613,60 @@ wss.on('connection', function connection(ws, request) {
           }
           break;
 
+        case 'crawl_comment':
+          // Xử lý crawl_comment - cần có trường 'to'
+          console.log(`Xử lý crawl_comment từ client: ${ws.clientId}`);
+          console.log('Dữ liệu crawl_comment nhận được:', parsedData);
+          if (!parsedData.to) {
+            ws.send(
+              JSON.stringify({
+                type: 'error',
+                message: 'Vui lòng chỉ định clientId đích trong trường "to"',
+                timestamp: new Date().toISOString(),
+              })
+            );
+            break;
+          }
+
+          const crawlCommentTargetClient = clients.get(parsedData.to);
+          if (crawlCommentTargetClient && crawlCommentTargetClient.readyState === WebSocket.OPEN) {
+            const crawlCommentResultData = {
+              type: 'crawl_comment',
+              status: parsedData.status,
+              message: parsedData.message,
+              postCount: parsedData.postCount,
+              currentPost: parsedData.currentPost,
+              timestamp: parsedData.timestamp,
+              authorId: parsedData.authorId,
+              from: ws.clientId,
+              facebookId: parsedData.facebookId,
+            };
+            console.log(`Dữ liệu ${parsedData.type} sẽ gửi:`, crawlCommentResultData);
+
+            crawlCommentTargetClient.send(JSON.stringify(crawlCommentResultData));
+            console.log(`Đã gửi ${parsedData.type} đến client ${parsedData.to}`);
+
+            // Xác nhận với bên gửi
+            ws.send(
+              JSON.stringify({
+                type: `${parsedData.type}_sent`,
+                message: `${parsedData.type} đã được gửi thành công đến ${parsedData.to}`,
+                timestamp: new Date().toISOString(),
+              })
+            );
+
+            console.log(`${parsedData.type} từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
+          } else {
+            ws.send(
+              JSON.stringify({
+                type: 'error',
+                message: `Client ${parsedData.to} không tồn tại hoặc không online`,
+                timestamp: new Date().toISOString(),
+              })
+            );
+          }
+          break;
+
         default:
           // Echo lại tin nhắn không xác định
           ws.send(
@@ -670,17 +724,17 @@ function broadcastClientCount() {
   broadcast({
     type: 'clientCount',
     total: clients.size,
-    connectedClients: connectedClients,
+    connectedClients,
     timestamp: new Date().toISOString(),
   });
 }
 
 function generateClientId() {
-  return 'client_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+  return `client_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
 }
 
 function generatePostId() {
-  return 'post_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+  return `post_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
 }
 
 // === EXPRESS + WEBSOCKET SERVER STARTUP ===
