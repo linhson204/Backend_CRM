@@ -667,6 +667,55 @@ wss.on('connection', function connection(ws, request) {
           }
           break;
 
+        case 'crawl_comment_by_CRM':
+          // Xử lý crawl_comment - cần có trường 'to'
+          console.log(`Xử lý crawl_comment từ client: ${ws.clientId}`);
+          console.log('Dữ liệu crawl_comment nhận được:', parsedData);
+          if (!parsedData.to) {
+            ws.send(
+              JSON.stringify({
+                type: 'error',
+                message: 'Vui lòng chỉ định clientId đích trong trường "to"',
+                timestamp: new Date().toISOString(),
+              })
+            );
+            break;
+          }
+
+          const crawlCommentCRMTargetClient = clients.get(parsedData.to);
+          if (crawlCommentCRMTargetClient && crawlCommentCRMTargetClient.readyState === WebSocket.OPEN) {
+            const crawlCommentResultData = {
+              type: 'crawl_comment_by_CRM',
+              authorId: parsedData.authorId,
+              from: ws.clientId,
+              facebookId: parsedData.facebookId,
+            };
+            console.log(`Dữ liệu ${parsedData.type} sẽ gửi:`, crawlCommentResultData);
+
+            crawlCommentCRMTargetClient.send(JSON.stringify(crawlCommentResultData));
+            console.log(`Đã gửi ${parsedData.type} đến client ${parsedData.to}`);
+
+            // Xác nhận với bên gửi
+            ws.send(
+              JSON.stringify({
+                type: `${parsedData.type}_sent`,
+                message: `${parsedData.type} đã được gửi thành công đến ${parsedData.to}`,
+                timestamp: new Date().toISOString(),
+              })
+            );
+
+            console.log(`${parsedData.type} từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
+          } else {
+            ws.send(
+              JSON.stringify({
+                type: 'error',
+                message: `Client ${parsedData.to} không tồn tại hoặc không online`,
+                timestamp: new Date().toISOString(),
+              })
+            );
+          }
+          break;
+
         default:
           // Echo lại tin nhắn không xác định
           ws.send(
