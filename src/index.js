@@ -791,7 +791,7 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   logger.info('Connected to MongoDB');
   server = httpServer.listen(config.port, () => {
     logger.info(`Server running on port ${config.port}`);
-    logger.info(`Express API: http://localhost:${config.port}/v1`);
+    logger.info(`Express API: http://localhost:${config.port}/api`);
     logger.info(`WebSocket: ws://localhost:${config.port}`);
   });
 });
