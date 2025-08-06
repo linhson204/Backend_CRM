@@ -356,7 +356,7 @@ wss.on('connection', function connection(ws, request) {
               type: 'reply_comment_byB',
               postId: parsedData.postId,
               commentId: parsedData.commentId,
-              replyId: parsedData.replyCommentId || '1',
+              replyId: parsedData.replyId,
               content: parsedData.content,
               linkUserReply: parsedData.linkUserReply || '',
               authorId: parsedData.authorId || ws.clientId,
