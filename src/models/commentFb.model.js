@@ -14,7 +14,6 @@ const feedbackSchema = new Schema({
   },
   userLinkFb: {
     type: String,
-    required: true,
   },
   replyToAuthor: {
     type: String,
