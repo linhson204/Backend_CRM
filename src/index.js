@@ -1,16 +1,22 @@
 const mongoose = require('mongoose');
-const http = require('http');
+// const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const WebSocket = require('ws');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 
 // Import WebSocket logic
-
 let server;
 
+const privateKey = fs.readFileSync('./ssl/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('./ssl/fullchain.pem', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
 // Tạo HTTP server từ Express app
-const httpServer = http.createServer(app);
+// const httpServer = http.createServer(app);
+const httpServer = https.createServer(credentials, app);
 
 // === WEBSOCKET SERVER SETUP ===
 const wss = new WebSocket.Server({ server: httpServer });
@@ -791,8 +797,8 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   logger.info('Connected to MongoDB');
   server = httpServer.listen(config.port, () => {
     logger.info(`Server running on port ${config.port}`);
-    logger.info(`Express API: http://localhost:${config.port}/api`);
-    logger.info(`WebSocket: ws://localhost:${config.port}`);
+    logger.info(`Express API: https://localhost:${config.port}/api`);
+    logger.info(`WebSocket: wss://localhost:${config.port}`);
   });
 });
 

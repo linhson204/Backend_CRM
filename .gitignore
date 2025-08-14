@@ -1,3 +1,5 @@
+# Bỏ qua thư mục ssl chứa chứng chỉ SSL
+ssl/
 
 # Dependencies
 node_modules/
