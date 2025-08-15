@@ -37,8 +37,8 @@ const fileFilter = (req, file, cb) => {
 const uploadImage = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 3000000 }, // Giới hạn kích thước file (1MB)
-}).array('image', 100); // Cho phép upload tối đa 100 file
+  limits: { fileSize: 4000000 }, // Giới hạn kích thước file (4MB)
+}).array('image', 1000); // Cho phép upload tối đa 100 file
 
 module.exports = {
   uploadImage,
