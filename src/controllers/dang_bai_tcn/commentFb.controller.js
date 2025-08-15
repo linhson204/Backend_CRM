@@ -1,9 +1,9 @@
-const commentService = require('../services/commentFb.service');
-const websocketService = require('../services/websocket.service');
 const httpStatus = require('http-status');
-const pick = require('../utils/pick');
-const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const pick = require('../../utils/pick');
+const ApiError = require('../../utils/ApiError');
+const catchAsync = require('../../utils/catchAsync');
+const commentService = require('../../services/dang_bai_tcn/commentFb.service');
+const websocketService = require('../../services/websocket.service');
 
 const createComment = catchAsync(async (req, res) => {
   const comment = await commentService.createComment(req.body);

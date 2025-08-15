@@ -1,4 +1,4 @@
-const commentModel = require('../models/commentFb.model');
+const commentModel = require('../../models/dang_bai_tcn/commentFb.model');
 
 const createComment = async (comment) => {
   return await commentModel.create(comment);

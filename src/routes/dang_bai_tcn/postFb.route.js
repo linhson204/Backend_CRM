@@ -1,7 +1,7 @@
 const express = require('express');
-const postController = require('../../controllers/postFb.controller');
 // const auth = require('../../middlewares/auth');
 const router = express.Router();
+const postController = require('../../controllers/dang_bai_tcn/postFb.controller');
 
 // router
 //     .route('/')

@@ -1,9 +1,9 @@
 const httpStatus = require('http-status');
-const { postService } = require('../services');
-const websocketService = require('../services/websocket.service');
-const pick = require('../utils/pick');
-const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { postService } = require('../../services');
+const websocketService = require('../../services/websocket.service');
+const pick = require('../../utils/pick');
+const ApiError = require('../../utils/ApiError');
+const catchAsync = require('../../utils/catchAsync');
 
 const createPost = catchAsync(async (req, res) => {
   const post = await postService.createPost(req.body);

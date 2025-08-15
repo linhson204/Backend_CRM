@@ -1,6 +1,6 @@
-const commentController = require('../../controllers/commentFb.controller');
 // const auth = require('../../middlewares/auth');
 const express = require('express');
+const commentController = require('../../controllers/dang_bai_tcn/commentFb.controller');
 
 const router = express.Router();
 

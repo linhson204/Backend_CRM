@@ -1,6 +1,6 @@
 const express = require('express');
-const postRoute = require('./postFb.route');
-const commentRoute = require('./commentFb.route');
+const postRoute = require('./dang_bai_tcn/postFb.route');
+const commentRoute = require('./dang_bai_tcn/commentFb.route');
 const imageRoute = require('./image.route');
 const websocketRoute = require('./websocket.route');
 

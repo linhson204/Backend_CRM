@@ -1,4 +1,4 @@
-const Post = require('../models/postFb.model');
+const Post = require('../../models/dang_bai_tcn/postFb.model');
 // const Comments = require('../services/comments.service');
 // const Likes = require('../services/likes.service');
 

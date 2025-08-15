@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
-const { paginate } = require('./plugins');
+const { paginate } = require('../plugins');
 
 const attachmentsSchema = new Schema(
   {

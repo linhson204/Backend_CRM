@@ -1,6 +1,6 @@
 const express = require('express');
-const websocketService = require('../../services/websocket.service');
-const auth = require('../../middlewares/auth');
+const websocketService = require('../services/websocket.service');
+const auth = require('../middlewares/auth');
 
 const router = express.Router();
 
