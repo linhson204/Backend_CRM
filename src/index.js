@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-// const http = require('http');
-const https = require('https');
+const http = require('http');
+// const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const app = require('./app');
@@ -10,13 +10,13 @@ const logger = require('./config/logger');
 // Import WebSocket logic
 let server;
 
-const privateKey = fs.readFileSync('./ssl/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('./ssl/fullchain.pem', 'utf8');
-const credentials = { key: privateKey, cert: certificate };
+// const privateKey = fs.readFileSync('./ssl/privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('./ssl/fullchain.pem', 'utf8');
+// const credentials = { key: privateKey, cert: certificate };
 
 // Tạo HTTP server từ Express app
-// const httpServer = http.createServer(app);
-const httpServer = https.createServer(credentials, app);
+const httpServer = http.createServer(app);
+// const httpServer = https.createServer(credentials, app);
 
 // === WEBSOCKET SERVER SETUP ===
 const wss = new WebSocket.Server({ server: httpServer });
@@ -74,6 +74,26 @@ wss.on('connection', function connection(ws, request) {
             })
           );
           broadcastClientCount();
+          const registerTargetClient = clients.get(parsedData.to);
+          if (registerTargetClient && registerTargetClient.readyState === WebSocket.OPEN) {
+            const registerData = {
+              type: 'online',
+              facebookId: parsedData.clientId,
+              message: 'Đã online',
+              timestamp: new Date().toISOString(),
+            };
+            console.log('Tin nhắn gửi đi', registerData);
+            registerTargetClient.send(JSON.stringify(registerData));
+            console.log(`Đã gửi đến client ${parsedData.to}`);
+          } else {
+            ws.send(
+              JSON.stringify({
+                type: 'error',
+                message: `Client ${parsedData.to} không tồn tại hoặc không online`,
+                timestamp: new Date().toISOString(),
+              })
+            );
+          }
           break;
 
         case 'new_post':
@@ -88,7 +108,6 @@ wss.on('connection', function connection(ws, request) {
             );
             break;
           }
-
           const postTargetClient = clients.get(parsedData.to);
           if (postTargetClient && postTargetClient.readyState === WebSocket.OPEN) {
             const postData = {
@@ -103,6 +122,7 @@ wss.on('connection', function connection(ws, request) {
               metadata: parsedData.metadata || {},
             };
 
+            console.log('Tin nhắn sẽ gửi:', postData);
             postTargetClient.send(JSON.stringify(postData));
 
             // Xác nhận với bên gửi rằng post đã được gửi
@@ -117,13 +137,19 @@ wss.on('connection', function connection(ws, request) {
 
             console.log(`Post từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
           } else {
-            ws.send(
-              JSON.stringify({
-                type: 'error',
-                message: `Client ${parsedData.to} không tồn tại hoặc không online`,
-                timestamp: new Date().toISOString(),
-              })
-            );
+            try {
+              ws.send(
+                JSON.stringify({
+                  type: 'error',
+                  to: parsedData.authorId,
+                  message: `Client ${parsedData.to} không tồn tại hoặc không online`,
+                  timestamp: new Date().toISOString(),
+                })
+              );
+              console.log('Error message sent successfully');
+            } catch (error) {
+              console.error('Error sending message:', error);
+            }
           }
           break;
 
@@ -750,6 +776,13 @@ wss.on('connection', function connection(ws, request) {
     if (ws.clientId) {
       clients.delete(ws.clientId);
       console.log(`Client ${ws.clientId} đã bị xóa khỏi danh sách`);
+      // Gửi thông báo đến các client khác về clientId bị xóa
+      broadcast({
+        type: 'client_disconnected',
+        clientId: ws.clientId,
+        message: `Client ${ws.clientId} đã ngắt kết nối`,
+        timestamp: new Date().toISOString(),
+      });
     }
     broadcastClientCount();
   });

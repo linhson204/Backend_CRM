@@ -17,6 +17,9 @@
     "no-underscore-dangle": "off",
     "consistent-return": "off",
     "jest/expect-expect": "off",
-    "security/detect-object-injection": "off"
+    "security/detect-object-injection": "off",
+    "no-unused-vars": "off",
+    "object-shorthand": "off",
+    "global-require": "off"
   }
 }

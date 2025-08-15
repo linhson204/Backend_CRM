@@ -1,6 +1,9 @@
 # Bỏ qua thư mục ssl chứa chứng chỉ SSL
 ssl/
 
+# Bỏ qua thư mục uploads chứa ảnh upload
+uploads/
+
 # Dependencies
 node_modules/
 

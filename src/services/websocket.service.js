@@ -8,7 +8,7 @@ const getWebSocketService = () => {
     return {
       broadcast: () => console.log('WebSocket not initialized'),
       broadcastClientCount: () => console.log('WebSocket not initialized'),
-      clients: new Map()
+      clients: new Map(),
     };
   }
 };
@@ -19,7 +19,7 @@ const notifyNewPost = (postData) => {
   broadcast({
     type: 'new_post_notification',
     data: postData,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
 
@@ -29,7 +29,7 @@ const notifyNewComment = (commentData) => {
   broadcast({
     type: 'new_comment_notification',
     data: commentData,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
 
@@ -37,8 +37,9 @@ const notifyNewComment = (commentData) => {
 const sendToUser = (clientId, message) => {
   const { clients } = getWebSocketService();
   const client = clients.get(clientId);
-  
-  if (client && client.readyState === 1) { // WebSocket.OPEN = 1
+
+  if (client && client.readyState === 1) {
+    // WebSocket.OPEN = 1
     client.send(JSON.stringify(message));
     return true;
   }
@@ -57,5 +58,5 @@ module.exports = {
   sendToUser,
   getOnlineUsers,
   broadcast: () => getWebSocketService().broadcast,
-  clients: () => getWebSocketService().clients
+  clients: () => getWebSocketService().clients,
 };
