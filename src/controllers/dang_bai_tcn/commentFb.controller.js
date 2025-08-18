@@ -25,6 +25,7 @@ const getCommentById = catchAsync(async (req, res) => {
 const getCommentsByPostId = catchAsync(async (req, res) => {
   const { postId, userId, facebookId } = req.body;
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  if (!options.limit) options.limit = 100;
 
   const result = await commentService.getCommentsByPostId(
     {
