@@ -21,6 +21,8 @@
     "no-unused-vars": "off",
     "object-shorthand": "off",
     "global-require": "off",
-    "no-return-await": "off"
+    "no-return-await": "off",
+    "camelcase": "off",
+    "spaced-comment": "off"
   }
 }

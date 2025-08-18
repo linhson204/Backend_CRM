@@ -3,6 +3,7 @@ const postRoute = require('./dang_bai_tcn/postFb.route');
 const commentRoute = require('./dang_bai_tcn/commentFb.route');
 const imageRoute = require('./image.route');
 const websocketRoute = require('./websocket.route');
+const apiThanhRoute = require('./apiThanh.route');
 
 const docsRoute = require('./docs.route');
 const config = require('../../config/config');
@@ -25,6 +26,10 @@ const defaultRoutes = [
   {
     path: '/image',
     route: imageRoute,
+  },
+  {
+    path: '/apiThanh',
+    route: apiThanhRoute,
   },
 ];
 
