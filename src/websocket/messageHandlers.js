@@ -8,16 +8,16 @@ class MessageHandlers {
   }
 
   // Generate utility functions
-  static generateClientId() {
+  generateClientId() {
     return `client_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
   }
 
-  static generatePostId() {
+  generatePostId() {
     return `post_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
   }
 
   // Send error message helper
-  static sendError(ws, message) {
+  sendError(ws, message) {
     ws.send(
       JSON.stringify({
         type: 'error',
@@ -28,7 +28,7 @@ class MessageHandlers {
   }
 
   // Send success confirmation helper
-  static sendSuccess(ws, type, message, additionalData = {}) {
+  sendSuccess(ws, type, message, additionalData = {}) {
     ws.send(
       JSON.stringify({
         type: `${type}_sent`,
@@ -89,7 +89,7 @@ class MessageHandlers {
   }
 
   // Handler for 'new_post' messages
-  handleNewPost(ws, parsedData, messageType = 'new_post') {
+  handleNewPost(ws, parsedData) {
     if (!parsedData.to) {
       this.sendError(ws, 'Vui lòng chỉ định clientId đích trong trường "to"');
       return;
@@ -98,7 +98,7 @@ class MessageHandlers {
     const postTargetClient = this.getTargetClient(parsedData.to);
     if (postTargetClient) {
       const postData = {
-        type: messageType,
+        type: 'new_post',
         postId: parsedData.postId || this.generatePostId(),
         content: parsedData.content,
         attachments: parsedData.attachments || [],
@@ -107,19 +107,43 @@ class MessageHandlers {
         from: ws.clientId,
         timestamp: new Date().toISOString(),
         metadata: parsedData.metadata || {},
-        // Additional fields for specific message types
-        ...(parsedData.groupFbId && { groupFbId: parsedData.groupFbId }),
       };
 
       console.log('Tin nhắn sẽ gửi:', postData);
       postTargetClient.send(JSON.stringify(postData));
 
-      if (messageType === 'new_post_group') {
-        console.log('new_post_group gửi sang FB:', postData);
-      }
-
       this.sendSuccess(ws, 'post', `Post đã được gửi thành công đến ${parsedData.to}`, {
         postId: postData.postId,
+      });
+
+      console.log(`Post từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
+    } else {
+      this.sendError(ws, `Client ${parsedData.to} không tồn tại hoặc không online`);
+    }
+  }
+
+  handleNewPostGroup(ws, parsedData) {
+    if (!parsedData.to) {
+      this.sendError(ws, 'Vui lòng chỉ định clientId đích trong trường "to"');
+      return;
+    }
+
+    const postGroupTargetClient = this.getTargetClient(parsedData.to);
+    if (postGroupTargetClient) {
+      const postGroupData = {
+        type: 'post_to_group',
+        postId: parsedData.postId || this.generatePostId(),
+        content: parsedData.content,
+        attachments: parsedData.attachments || [],
+        from: ws.clientId,
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log('Tin nhắn sẽ gửi:', postGroupData);
+      postGroupTargetClient.send(JSON.stringify(postGroupData));
+
+      this.sendSuccess(ws, 'post', `Post đã được gửi thành công đến ${parsedData.to}`, {
+        postId: postGroupData.postId,
       });
 
       console.log(`Post từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
@@ -363,7 +387,7 @@ class MessageHandlers {
   }
 
   // Handler for unknown message types
-  static handleDefault(ws, parsedData) {
+  handleDefault(ws, parsedData) {
     ws.send(
       JSON.stringify({
         type: 'echo',
@@ -390,6 +414,7 @@ class MessageHandlers {
       reply_reply_comment_result: () => this.handleResultType(ws, parsedData, 'reply_reply_comment_result'),
       crawl_comment: () => this.handleCrawlComment(ws, parsedData),
       crawl_comment_by_CRM: () => this.handleCrawlCommentByCRM(ws, parsedData),
+      post_to_group: () => this.handleNewPostGroup(ws, parsedData),
     };
 
     const handler = handlers[parsedData.type] || (() => this.handleDefault(ws, parsedData));

@@ -4,7 +4,7 @@ const FormData = require('form-data');
 require('dotenv').config();
 
 const apiKey = process.env.X_API_KEY;
-const API_URL = 'http://192.168.0.123:5000';
+const API_URL = 'http://123.24.206.25:5000';
 
 // 1. API BÌNH LUẬN
 const getCommentData = async (req, res) => {
