@@ -119,6 +119,7 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
     logger.info(`Server running on port ${config.port}`);
     logger.info(`Express API: https://localhost:${config.port}/api`);
     logger.info(`WebSocket: wss://localhost:${config.port}`);
+    logger.info(`Swagger: http://localhost:${config.port}/api-docs`);
   });
 });
 

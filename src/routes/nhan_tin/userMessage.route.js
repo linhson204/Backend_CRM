@@ -1,8 +1,8 @@
 /**
  * @swagger
  * tags:
- *   - name: DangBaiTCN
- *     description: "Quản lý bài viết TCN"
+ *   - name: NhanTin1-1
+ *     description: "Quản lý số người nhắn tin"
  */
 
 /**
@@ -12,60 +12,61 @@
  *     Attachment:
  *       type: object
  *       properties:
- *         type:
+ *         _id:
  *           type: string
- *           enum: [image, video]
- *         url:
+ *         messageId:
  *           type: string
- *         name:
+ *         userId:
  *           type: string
+ *         facebookId:
+ *           type: string
+ *         sender:
+ *           type: string
+ *         lastMessage:
+ *           type: string
+ *         createdAt:
+ *           type: number
+ *         updatedAt:
+ *           type: number
  *       example:
- *         type: "image"
- *         url: "https://example.com/img.png"
- *         name: "Ảnh minh họa"
+ *         _id: "68ac1f080a7c412a78c62953"
+ *         messageId: "123459"
+ *         userId: "001"
+ *         facebookId: "B001"
+ *         sender: "Nguyen Van C"
+ *         lastMessage: "1p"
+ *         createdAt: 1692950400
+ *         updatedAt: 1692950400
  *
- *     Post:
+ *     UserMessage:
  *       type: object
  *       properties:
  *         _id:
  *           type: string
- *           example: "689c1610dd27074f18321076"
+ *           example: "68ac1f080a7c412a78c6295"
  *         userId:
  *           type: string
  *           example: "22614471"
  *         facebookId:
  *           type: string
  *           example: "B22735395"
- *         userNameFacebook:
- *           type: string
- *           example: "Nguyen Van A"
- *         content:
- *           type: string
- *           example: "Nội dung bài viết..."
- *         attachments:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Attachment'
- *         facebookPostId:
+ *         messageId:
  *           type: string
  *           example: "123456789"
- *         isPosted:
- *           type: boolean
- *           example: true
- *         facebookPostUrl:
+ *         sender:
  *           type: string
- *           example: "https://facebook.com/123456789"
+ *           example: "Nguyen Van A"
+ *         lastMessage:
+ *           type: string
+ *           example: "1p"
  *         createdAt:
  *           type: number
  *           example: 1713358123
  *         updatedAt:
  *           type: number
  *           example: 1713358123
- *         commentsCount:
- *           type: number
- *           example: 0
  *
- *     PaginatedPosts:
+ *     PaginatedUserMessage:
  *       type: object
  *       properties:
  *         page:
@@ -83,25 +84,25 @@
  *         results:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/Post'
+ *             $ref: '#/components/schemas/UserMessage'
  */
 
 /**
  * @swagger
- * /post:
+ * /userMessage:
  *   get:
- *     summary: "Lấy danh sách bài viết (có phân trang)"
- *     tags: [DangBaiTCN]
+ *     summary: "Lấy danh sách userMessage (có phân trang)"
+ *     tags: [NhanTin1-1]
  *     parameters:
  *       - in: query
  *         name: userId
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
  *         description: "ID người dùng (VD: 22858640)"
  *       - in: query
  *         name: facebookId
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
  *         description: "Facebook ID (VD: B22623688)"
@@ -118,88 +119,88 @@
  *         schema:
  *           type: integer
  *           default: 10
- *         description: "Số bài viết mỗi trang"
+ *         description: "Số userMessage mỗi trang"
  *     responses:
  *       200:
- *         description: "Danh sách bài viết có phân trang"
+ *         description: "Danh sách userMessage có phân trang"
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/PaginatedPosts'
+ *               $ref: '#/components/schemas/PaginatedUserMessage'
  *
  *   post:
- *     summary: "Tạo bài viết mới"
- *     tags: [DangBaiTCN]
+ *     summary: "Tạo userMessage mới"
+ *     tags: [NhanTin1-1]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Post'
+ *             $ref: '#/components/schemas/UserMessage'
  *     responses:
  *       201:
  *         description: "Tạo thành công"
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Post'
+ *               $ref: '#/components/schemas/UserMessage'
  */
 
 /**
  * @swagger
- * /post/{postId}:
+ * /userMessage/{userMessageId}:
  *   get:
- *     summary: "Lấy chi tiết bài viết"
- *     tags: [DangBaiTCN]
+ *     summary: "Lấy chi tiết userMessage"
+ *     tags: [NhanTin1-1]
  *     parameters:
  *       - in: path
- *         name: postId
+ *         name: userMessageId
  *         required: true
  *         schema:
  *           type: string
- *         description: "ID bài viết"
+ *         description: "ID userMessage"
  *     responses:
  *       200:
- *         description: "Chi tiết bài viết"
+ *         description: "Chi tiết userMessage"
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Post'
+ *               $ref: '#/components/schemas/UserMessage'
  *
  *   patch:
- *     summary: "Cập nhật bài viết"
- *     tags: [DangBaiTCN]
+ *     summary: "Cập nhật userMessage"
+ *     tags: [NhanTin1-1]
  *     parameters:
  *       - in: path
- *         name: postId
+ *         name: userMessageId
  *         required: true
  *         schema:
  *           type: string
- *         description: "ID bài viết"
+ *         description: "ID userMessage"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Post'
+ *             $ref: '#/components/schemas/UserMessage'
  *     responses:
  *       200:
  *         description: "Cập nhật thành công"
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Post'
+ *               $ref: '#/components/schemas/UserMessage'
  *
  *   delete:
- *     summary: "Xóa bài viết"
- *     tags: [DangBaiTCN]
+ *     summary: "Xóa userMessage"
+ *     tags: [NhanTin1-1]
  *     parameters:
  *       - in: path
- *         name: postId
+ *         name: userMessageId
  *         required: true
  *         schema:
  *           type: string
- *         description: "ID bài viết"
+ *         description: "ID userMessage"
  *     responses:
  *       204:
  *         description: "Xóa thành công"
@@ -209,10 +210,14 @@ const express = require('express');
 
 const router = express.Router();
 
-const postController = require('../../controllers/dang_bai_tcn/postFb.controller');
+const userMessageController = require('../../controllers/nhan_tin/userMessage.controller');
 
-router.route('/').post(postController.createPost).get(postController.getPosts);
+router.route('/').post(userMessageController.createUserMessage).get(userMessageController.getUserMessages);
 
-router.route('/:postId').get(postController.getPost).patch(postController.updatePost).delete(postController.deletePost);
+router
+  .route('/:userMessageId')
+  .get(userMessageController.getUserMessage)
+  .patch(userMessageController.updateUserMessage)
+  .delete(userMessageController.deleteUserMessage);
 
 module.exports = router;

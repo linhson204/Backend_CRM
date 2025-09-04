@@ -72,20 +72,20 @@ class MessageHandlers {
 
     this.broadcastClientCount();
 
-    const registerTargetClient = this.getTargetClient(parsedData.to);
-    if (registerTargetClient) {
-      const registerData = {
-        type: 'online',
-        facebookId: parsedData.clientId,
-        message: 'Đã online',
-        timestamp: new Date().toISOString(),
-      };
-      console.log('Tin nhắn gửi đi', registerData);
-      registerTargetClient.send(JSON.stringify(registerData));
-      console.log(`Đã gửi đến client ${parsedData.to}`);
-    } else {
-      this.sendError(ws, `Client ${parsedData.to} không tồn tại hoặc không online`);
-    }
+    // const registerTargetClient = this.getTargetClient(parsedData.to);
+    // if (registerTargetClient) {
+    //   const registerData = {
+    //     type: 'online',
+    //     facebookId: parsedData.clientId,
+    //     message: 'Đã online',
+    //     timestamp: new Date().toISOString(),
+    //   };
+    //   console.log('Tin nhắn gửi đi', registerData);
+    //   registerTargetClient.send(JSON.stringify(registerData));
+    //   console.log(`Đã gửi đến client ${parsedData.to}`);
+    // } else {
+    //   this.sendError(ws, `Client ${parsedData.to} không tồn tại hoặc không online`);
+    // }
   }
 
   // Handler for 'new_post' messages

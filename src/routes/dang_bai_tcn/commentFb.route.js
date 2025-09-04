@@ -308,7 +308,7 @@ module.exports = router;
  *         schema:
  *           type: string
  *     responses:
- *       200:
+ *       204:
  *         description: Feedback đã bị xóa
  */
 

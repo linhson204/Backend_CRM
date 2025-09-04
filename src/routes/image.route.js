@@ -128,7 +128,7 @@
  *           type: string
  *         description: ID ảnh
  *     responses:
- *       200:
+ *       204:
  *         description: Xóa ảnh thành công
  *       404:
  *         description: Không tìm thấy ảnh

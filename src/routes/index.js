@@ -2,6 +2,9 @@ const express = require('express');
 const postRoute = require('./dang_bai_tcn/postFb.route');
 const commentRoute = require('./dang_bai_tcn/commentFb.route');
 const imageRoute = require('./image.route');
+const mediaRoute = require('./media.route');
+const messageFbRoute = require('./nhan_tin/messageFb.route');
+const userMessageRoute = require('./nhan_tin/userMessage.route');
 const websocketRoute = require('./websocket.route');
 const apiThanhRoute = require('./apiThanh.route');
 const postGroupRoute = require('./dang_bai_group/postGroup.route');
@@ -35,6 +38,18 @@ const defaultRoutes = [
   {
     path: '/postGroup',
     route: postGroupRoute,
+  },
+  {
+    path: '/media',
+    route: mediaRoute,
+  },
+  {
+    path: '/userMessage',
+    route: userMessageRoute,
+  },
+  {
+    path: '/message',
+    route: messageFbRoute,
   },
 ];
 
