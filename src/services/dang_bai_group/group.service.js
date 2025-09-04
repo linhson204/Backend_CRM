@@ -1,4 +1,4 @@
-const { getCollection } = require('../database');
+const { getCollection } = require('../../database');
 
 /**
  * Lấy dữ liệu nhóm từ cơ sở dữ liệu
@@ -10,7 +10,8 @@ const { getCollection } = require('../database');
  */
 const getGroupsData = async (userId, groupName = null, limit = 0, page = 1) => {
   try {
-    const collection = getCollection('Link-groups');
+    // const collection = getCollection('Link-groups');
+    const collection = getCollection('posts');
 
     // Tạo pipeline aggregation
     const pipeline = [];

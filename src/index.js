@@ -7,6 +7,7 @@ const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 const MessageHandlers = require('./websocket/messageHandlers');
+const { connectDB } = require('./database');
 
 // Import WebSocket logic
 let server;
@@ -113,8 +114,13 @@ function broadcastClientCount() {
 }
 
 // === EXPRESS + WEBSOCKET SERVER STARTUP ===
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => {
   logger.info('Connected to MongoDB');
+  
+  // Kết nối đến MongoDB cho native driver
+  await connectDB();
+  logger.info('Connected to MongoDB (Native Driver)');
+  
   server = httpServer.listen(config.port, () => {
     logger.info(`Server running on port ${config.port}`);
     logger.info(`Express API: https://localhost:${config.port}/api`);
