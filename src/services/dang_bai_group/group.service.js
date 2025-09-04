@@ -1,13 +1,7 @@
 const { getCollection } = require('../../database');
 
-/**
- * Lấy dữ liệu nhóm từ cơ sở dữ liệu
- * @param {string} userId - ID người dùng
- * @param {string} groupName - Tên nhóm (optional)
- * @param {number} limit - Số lượng giới hạn (0 = không giới hạn)
- * @param {number} page - Trang hiện tại (mặc định = 1)
- * @returns {Promise<Array>} - Danh sách nhóm
- */
+// Lấy dữ liệu nhóm từ cơ sở dữ liệu
+
 const getGroupsData = async (userId, groupName = null, limit = 0, page = 1) => {
   try {
     // const collection = getCollection('Link-groups');
@@ -77,6 +71,134 @@ const getGroupsData = async (userId, groupName = null, limit = 0, page = 1) => {
   }
 };
 
+const uploadAnswer = async (group_link, question, answer) => {
+  // const collection = getCollection('Questions');
+  const collection = getCollection('posts');
+
+  const result = await collection.updateOne(
+    { Group_link: group_link, Question: question },
+    { $set: { Answer: answer, Status: 'Đã trả lời' } }
+  );
+
+  if (result.matched_count === 0) {
+    return { message: 'Không tìm thấy câu hỏi', status: 404 };
+  }
+
+  if (result.modified_count === 0) {
+    return { message: 'Câu hỏi đã được trả lời trước đó', status: 400 };
+  }
+
+  return { message: 'Cập nhật câu trả lời thành công', status: 200 };
+};
+
+const getQuestionData = async (status = '', group_name = '', limit = 0, page = 1) => {
+  // const collection = getCollection('Questions');
+  const collection = getCollection('posts');
+  const pipeline = [];
+
+  // Bước 1: Join với collection Link-groups
+  pipeline.push({
+    $lookup: {
+      from: 'Link-groups',
+      localField: 'Group_link', // field trong Questions
+      foreignField: 'Link', // field trong Link-groups
+      as: 'group_info',
+    },
+  });
+
+  // Bước 2: Unwind group_info
+  pipeline.push({
+    $unwind: {
+      path: '$group_info',
+      preserveNullAndEmptyArrays: true,
+    },
+  });
+
+  // Bước 3: Match theo điều kiện
+  const matchStage = {};
+  if (status && status !== '') {
+    matchStage.Status = status;
+  }
+  if (group_name && group_name !== '') {
+    matchStage['group_info.Name'] = { $regex: group_name, $options: 'i' };
+  }
+  if (Object.keys(matchStage).length > 0) {
+    pipeline.push({ $match: matchStage });
+  }
+
+  // Bước 4: Sort theo Time (mới nhất trước)
+  pipeline.push({ $sort: { Time: -1 } });
+
+  // Bước 5: Pagination
+  if (limit > 0) {
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+  }
+
+  // Query Mongo
+  const result = await collection.aggregate(pipeline).toArray();
+  return result;
+};
+
+const sendCommandService = async (crm_id, user_id, type, params) => {
+  // const commandCollection = getCollection("Commands");
+  const commandCollection = getCollection('posts');
+
+  // ---- join_group ----
+  if (type === 'join_group') {
+    await commandCollection.insertOne({
+      crm_id,
+      user_id,
+      type: 'join_group',
+      params,
+      Status: 'Chưa xử lý',
+    });
+    return { message: 'Thêm lệnh thành công', status: 200 };
+  }
+
+  // ---- post_to_group ----
+  if (type === 'post_to_group') {
+    if (!params.group_link) {
+      return { message: 'Thiếu thông tin group_link', status: 400 };
+    }
+    if (!params.content) {
+      return { message: 'Thiếu thông tin content', status: 400 };
+    }
+
+    // Lưu bài đăng
+    const postCollection = getCollection('Bai-dang');
+    const result = await postCollection.insertOne({
+      crm_id,
+      user_id,
+      group_link: params.group_link,
+      content: params.content,
+      files: params.files || [],
+      status: 'Chưa xử lý',
+    });
+
+    // Thêm oid vào params
+    params.oid = result.insertedId.toString();
+
+    // Lưu command
+    await commandCollection.insertOne({
+      crm_id,
+      user_id,
+      type: 'post_to_group',
+      params,
+      Status: 'Chưa xử lý',
+    });
+
+    return { message: 'Thêm lệnh thành công', status: 200 };
+  }
+
+  // ---- type không hợp lệ ----
+  return { message: 'Lệnh không hợp lệ', status: 400 };
+};
+
 module.exports = {
   getGroupsData,
+  uploadAnswer,
+  getQuestionData,
+  sendCommandService,
 };
