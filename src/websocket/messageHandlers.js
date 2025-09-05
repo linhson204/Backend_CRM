@@ -129,18 +129,21 @@ class MessageHandlers {
     }
 
     const postGroupTargetClient = this.getTargetClient(parsedData.to);
-    if (postGroupTargetClient) {
+    // if (postGroupTargetClient) {
+    if (true) {
       const postGroupData = {
         type: 'post_to_group',
         postId: parsedData.postId || this.generatePostId(),
-        content: parsedData.content,
-        attachments: parsedData.attachments || [],
+        crm_id: parsedData.crm_id,
+        user_id: parsedData.user_id,
         from: ws.clientId,
+        params: parsedData.params || {},
+        attachments: parsedData.attachments || [],
         timestamp: new Date().toISOString(),
       };
 
       console.log('Tin nhắn sẽ gửi:', postGroupData);
-      postGroupTargetClient.send(JSON.stringify(postGroupData));
+      // postGroupTargetClient.send(JSON.stringify(postGroupData));
 
       this.sendSuccess(ws, 'post', `Post đã được gửi thành công đến ${parsedData.to}`, {
         postId: postGroupData.postId,
