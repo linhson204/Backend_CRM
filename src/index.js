@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const http = require('http');
-// const https = require('https');
+// const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const app = require('./app');
@@ -12,13 +12,13 @@ const { connectDB } = require('./database');
 // Import WebSocket logic
 let server;
 
-// const privateKey = fs.readFileSync('./ssl/privkey.pem', 'utf8');
-// const certificate = fs.readFileSync('./ssl/fullchain.pem', 'utf8');
-// const credentials = { key: privateKey, cert: certificate };
+const privateKey = fs.readFileSync('./ssl/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('./ssl/fullchain.pem', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 
 // Tạo HTTP server từ Express app
-const httpServer = http.createServer(app);
-// const httpServer = https.createServer(credentials, app);
+// const httpServer = http.createServer(app);
+const httpServer = https.createServer(credentials, app);
 
 // === WEBSOCKET SERVER SETUP ===
 const wss = new WebSocket.Server({ server: httpServer });
@@ -116,11 +116,11 @@ function broadcastClientCount() {
 // === EXPRESS + WEBSOCKET SERVER STARTUP ===
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => {
   logger.info('Connected to MongoDB');
-  
+
   // Kết nối đến MongoDB cho native driver
   await connectDB();
   logger.info('Connected to MongoDB (Native Driver)');
-  
+
   server = httpServer.listen(config.port, () => {
     logger.info(`Server running on port ${config.port}`);
     logger.info(`Express API: https://localhost:${config.port}/api`);
