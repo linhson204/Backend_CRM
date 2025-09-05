@@ -3,9 +3,9 @@ const catchAsync = require('../../utils/catchAsync');
 const groupService = require('../../services/dang_bai_group/group.service');
 
 const getGroups = catchAsync(async (req, res) => {
-  const { user_id, group_name = None, limit = 0, page = 1 } = req.body;
+  const { user_id, group_name = '', limit = 0, page = 1, user_status } = req.body;
 
-  const groups = await groupService.getGroupsData(user_id, group_name, limit, page);
+  const groups = await groupService.getGroupsData(user_id, group_name, limit, page, user_status);
 
   res.status(httpStatus.OK).send({
     results: groups,

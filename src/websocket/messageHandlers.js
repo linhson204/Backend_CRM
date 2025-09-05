@@ -45,6 +45,29 @@ class MessageHandlers {
     return client && client.readyState === WebSocket.OPEN ? client : null;
   }
 
+  // Send message to multiple targets (supports both string and array)
+  sendToTargets(targets, messageData) {
+    const targetArray = Array.isArray(targets) ? targets : [targets];
+    const results = {
+      successful: [],
+      failed: [],
+    };
+
+    targetArray.forEach((targetId) => {
+      const targetClient = this.getTargetClient(targetId);
+      if (targetClient) {
+        targetClient.send(JSON.stringify(messageData));
+        results.successful.push(targetId);
+        console.log(`Đã gửi tin nhắn đến client ${targetId}`);
+      } else {
+        results.failed.push(targetId);
+        console.log(`Client ${targetId} không tồn tại hoặc không online`);
+      }
+    });
+
+    return results;
+  }
+
   // Handler for 'chat' messages
   handleChat(ws, parsedData) {
     this.broadcast({
@@ -95,30 +118,37 @@ class MessageHandlers {
       return;
     }
 
-    const postTargetClient = this.getTargetClient(parsedData.to);
-    if (postTargetClient) {
-      const postData = {
-        type: 'new_post',
-        postId: parsedData.postId || this.generatePostId(),
-        content: parsedData.content,
-        attachments: parsedData.attachments || [],
-        authorId: parsedData.authorId || ws.clientId,
-        authorName: parsedData.authorName || 'Anonymous',
-        from: ws.clientId,
-        timestamp: new Date().toISOString(),
-        metadata: parsedData.metadata || {},
-      };
+    const postData = {
+      type: 'new_post',
+      postId: parsedData.postId || this.generatePostId(),
+      content: parsedData.content,
+      attachments: parsedData.attachments || [],
+      authorId: parsedData.authorId || ws.clientId,
+      authorName: parsedData.authorName || 'Anonymous',
+      from: ws.clientId,
+      timestamp: new Date().toISOString(),
+      metadata: parsedData.metadata || {},
+    };
 
-      console.log('Tin nhắn sẽ gửi:', postData);
-      postTargetClient.send(JSON.stringify(postData));
+    console.log('Tin nhắn sẽ gửi:', postData);
 
-      this.sendSuccess(ws, 'post', `Post đã được gửi thành công đến ${parsedData.to}`, {
-        postId: postData.postId,
-      });
+    const results = this.sendToTargets(parsedData.to, postData);
 
-      console.log(`Post từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
-    } else {
-      this.sendError(ws, `Client ${parsedData.to} không tồn tại hoặc không online`);
+    if (results.successful.length > 0) {
+      this.sendSuccess(
+        ws,
+        'post',
+        `Post đã được gửi thành công đến ${results.successful.length} client(s): ${results.successful.join(', ')}`,
+        {
+          postId: postData.postId,
+          successful: results.successful,
+          failed: results.failed,
+        }
+      );
+    }
+
+    if (results.failed.length > 0) {
+      this.sendError(ws, `Không thể gửi đến ${results.failed.length} client(s): ${results.failed.join(', ')}`);
     }
   }
 
@@ -164,39 +194,47 @@ class MessageHandlers {
       return;
     }
 
-    const targetClient = this.getTargetClient(parsedData.to);
-    if (targetClient) {
-      const commentData = {
-        type: messageType,
-        postId: parsedData.postId,
-        content: parsedData.content,
-        attachments: parsedData.attachments || [],
-        authorId: parsedData.authorId || ws.clientId,
-        authorName: parsedData.authorName || 'Anonymous',
-        URL: parsedData.URL || '',
-        from: ws.clientId,
-        timestamp: new Date().toISOString(),
-        metadata: parsedData.metadata || {},
-        // Additional fields for specific message types
-        ...(parsedData.linkUserComment && { linkUserComment: parsedData.linkUserComment }),
-        ...(parsedData.commentFbId && { commentFbId: parsedData.commentFbId }),
-        ...(parsedData.id_facebookComment && { commentFbId: parsedData.id_facebookComment }),
-      };
+    const commentData = {
+      type: messageType,
+      postId: parsedData.postId,
+      content: parsedData.content,
+      attachments: parsedData.attachments || [],
+      authorId: parsedData.authorId || ws.clientId,
+      authorName: parsedData.authorName || 'Anonymous',
+      URL: parsedData.URL || '',
+      from: ws.clientId,
+      timestamp: new Date().toISOString(),
+      metadata: parsedData.metadata || {},
+      // Additional fields for specific message types
+      ...(parsedData.linkUserComment && { linkUserComment: parsedData.linkUserComment }),
+      ...(parsedData.commentFbId && { commentFbId: parsedData.commentFbId }),
+      ...(parsedData.id_facebookComment && { commentFbId: parsedData.id_facebookComment }),
+    };
 
-      if (messageType === 'comment_byB') {
-        console.log('comment_byB gửi sang A:', commentData);
-      }
+    if (messageType === 'comment_byB') {
+      console.log('comment_byB gửi sang A:', commentData);
+    }
 
-      targetClient.send(JSON.stringify(commentData));
-      console.log(`Đã gửi ${messageType} đến client ${parsedData.to}`);
+    const results = this.sendToTargets(parsedData.to, commentData);
 
-      this.sendSuccess(ws, 'comment', `${messageType} đã được gửi thành công đến ${parsedData.to}`, {
-        postId: commentData.postId,
-      });
+    if (results.successful.length > 0) {
+      this.sendSuccess(
+        ws,
+        'comment',
+        `${messageType} đã được gửi thành công đến ${results.successful.length} client(s): ${results.successful.join(', ')}`,
+        {
+          postId: commentData.postId,
+          successful: results.successful,
+          failed: results.failed,
+        }
+      );
+    }
 
-      console.log(`${messageType} từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
-    } else {
-      this.sendError(ws, `Client ${parsedData.to} không tồn tại hoặc không online`);
+    if (results.failed.length > 0) {
+      this.sendError(
+        ws,
+        `Không thể gửi ${messageType} đến ${results.failed.length} client(s): ${results.failed.join(', ')}`
+      );
     }
   }
 
@@ -243,41 +281,49 @@ class MessageHandlers {
       return;
     }
 
-    const targetClient = this.getTargetClient(parsedData.to);
-    if (targetClient) {
-      const replyData = {
-        type: messageType,
-        postId: parsedData.postId || this.generatePostId(),
-        commentId: parsedData.commentId,
-        replyId: parsedData.replyId,
-        content: parsedData.content,
-        attachments: parsedData.attachments || [],
-        authorId: parsedData.authorId || ws.clientId,
-        authorName: parsedData.authorName || 'Anonymous',
-        URL: parsedData.URL,
-        from: ws.clientId,
-        timestamp: new Date().toISOString(),
-        metadata: parsedData.metadata || {},
-        // Additional fields for specific message types
-        ...(parsedData.linkUserReply && { linkUserReply: parsedData.linkUserReply }),
-        ...(parsedData.replyToAuthor && { replyToAuthor: parsedData.replyToAuthor }),
-      };
+    const replyData = {
+      type: messageType,
+      postId: parsedData.postId || this.generatePostId(),
+      commentId: parsedData.commentId,
+      replyId: parsedData.replyId,
+      content: parsedData.content,
+      attachments: parsedData.attachments || [],
+      authorId: parsedData.authorId || ws.clientId,
+      authorName: parsedData.authorName || 'Anonymous',
+      URL: parsedData.URL,
+      from: ws.clientId,
+      timestamp: new Date().toISOString(),
+      metadata: parsedData.metadata || {},
+      // Additional fields for specific message types
+      ...(parsedData.linkUserReply && { linkUserReply: parsedData.linkUserReply }),
+      ...(parsedData.replyToAuthor && { replyToAuthor: parsedData.replyToAuthor }),
+    };
 
-      if (messageType === 'reply_comment_byB') {
-        console.log('reply_comment_byB gửi sang A:', replyData);
-      }
+    if (messageType === 'reply_comment_byB') {
+      console.log('reply_comment_byB gửi sang A:', replyData);
+    }
 
-      targetClient.send(JSON.stringify(replyData));
-      console.log(`Đã gửi ${messageType} đến client ${parsedData.to}`);
+    const results = this.sendToTargets(parsedData.to, replyData);
 
-      this.sendSuccess(ws, 'reply_comment', `${messageType} đã được gửi thành công đến ${parsedData.to}`, {
-        postId: replyData.postId,
-        commentId: replyData.commentId,
-      });
+    if (results.successful.length > 0) {
+      this.sendSuccess(
+        ws,
+        'reply_comment',
+        `${messageType} đã được gửi thành công đến ${results.successful.length} client(s): ${results.successful.join(', ')}`,
+        {
+          postId: replyData.postId,
+          commentId: replyData.commentId,
+          successful: results.successful,
+          failed: results.failed,
+        }
+      );
+    }
 
-      console.log(`${messageType} từ ${ws.clientId} đã được gửi đến ${parsedData.to}`);
-    } else {
-      this.sendError(ws, `Client ${parsedData.to} không tồn tại hoặc không online`);
+    if (results.failed.length > 0) {
+      this.sendError(
+        ws,
+        `Không thể gửi ${messageType} đến ${results.failed.length} client(s): ${results.failed.join(', ')}`
+      );
     }
   }
 

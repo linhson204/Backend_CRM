@@ -2,10 +2,10 @@ const { getCollection } = require('../../database');
 
 // Lấy dữ liệu nhóm từ cơ sở dữ liệu
 
-const getGroupsData = async (userId, groupName = null, limit = 0, page = 1) => {
+const getGroupsData = async (userId, groupName = null, limit = 0, page = 1, userStatus = null) => {
   try {
-    // const collection = getCollection('Link-groups');
-    const collection = getCollection('posts');
+    const collection = getCollection('Link-groups');
+    // const collection = getCollection('posts');
 
     // Tạo pipeline aggregation
     const pipeline = [];
@@ -17,7 +17,20 @@ const getGroupsData = async (userId, groupName = null, limit = 0, page = 1) => {
       matchStage.Name = { $regex: groupName, $options: 'i' };
     }
 
-    if (userId) {
+    // Nếu có userStatus và userId thì filter theo trạng thái tham gia
+    if (userId && userStatus) {
+      if (userStatus === 'Đã tham gia') {
+        matchStage.Joined_Accounts = { $in: [userId] };
+      } else if (userStatus === 'Chờ duyệt') {
+        matchStage.Temp_Joined_Accounts = { $in: [userId] };
+      } else if (userStatus === 'Chưa tham gia') {
+        matchStage.$and = [
+          { $or: [{ Joined_Accounts: { $exists: false } }, { Joined_Accounts: { $not: { $in: [userId] } } }] },
+          { $or: [{ Temp_Joined_Accounts: { $exists: false } }, { Temp_Joined_Accounts: { $not: { $in: [userId] } } }] },
+        ];
+      }
+    } else if (userId && !userStatus) {
+      // Logic cũ: lấy các nhóm mà user đã tham gia hoặc chờ duyệt
       matchStage.$or = [{ Joined_Accounts: { $in: [userId] } }, { Temp_Joined_Accounts: { $in: [userId] } }];
     }
 
@@ -72,8 +85,8 @@ const getGroupsData = async (userId, groupName = null, limit = 0, page = 1) => {
 };
 
 const uploadAnswer = async (group_link, question, answer) => {
-  // const collection = getCollection('Questions');
-  const collection = getCollection('posts');
+  const collection = getCollection('Questions');
+  // const collection = getCollection('posts');
 
   const result = await collection.updateOne(
     { Group_link: group_link, Question: question },
@@ -92,8 +105,8 @@ const uploadAnswer = async (group_link, question, answer) => {
 };
 
 const getQuestionData = async (status = '', group_name = '', limit = 0, page = 1) => {
-  // const collection = getCollection('Questions');
-  const collection = getCollection('posts');
+  const collection = getCollection('Questions');
+  // const collection = getCollection('posts');
   const pipeline = [];
 
   // Bước 1: Join với collection Link-groups
@@ -142,8 +155,8 @@ const getQuestionData = async (status = '', group_name = '', limit = 0, page = 1
 };
 
 const sendCommandService = async (crm_id, user_id, type, params) => {
-  // const commandCollection = getCollection("Commands");
-  const commandCollection = getCollection('posts');
+  const commandCollection = getCollection('Commands');
+  // const commandCollection = getCollection('posts');
 
   // ---- join_group ----
   if (type === 'join_group') {
