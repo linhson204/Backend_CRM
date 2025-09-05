@@ -2,7 +2,7 @@ const { getCollection } = require('../../database');
 
 // Lấy dữ liệu nhóm từ cơ sở dữ liệu
 
-const getGroupsData = async (userId, groupName = null, limit = 0, page = 1, userStatus = null) => {
+const getGroupsData = async (userId, groupName = null, userStatus = null) => {
   try {
     const collection = getCollection('Link-groups');
     // const collection = getCollection('posts');
@@ -69,13 +69,7 @@ const getGroupsData = async (userId, groupName = null, limit = 0, page = 1, user
     // Bước 3: Sắp xếp
     pipeline.push({ $sort: { Name: 1 } });
 
-    // Bước 4: Phân trang
-    if (limit > 0) {
-      const skip = (page - 1) * limit;
-      pipeline.push({ $skip: skip });
-      pipeline.push({ $limit: limit });
-    }
-
+    // Loại bỏ pagination khỏi service, để controller xử lý
     const result = await collection.aggregate(pipeline).toArray();
     return result;
   } catch (error) {
