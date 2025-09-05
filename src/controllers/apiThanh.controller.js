@@ -40,6 +40,15 @@ const getFile = catchAsync(async (req, res) => {
   await apiThanh.getFile(req, res); // stream nên service pipe thẳng ra res
 });
 
+// ==========================================
+const getCommandDataBase = catchAsync(async (req, res) => {
+  await apiThanh.getCommandDataBase(req, res); // stream nên service pipe thẳng ra res
+});
+
+const getBaiDangDataBase = catchAsync(async (req, res) => {
+  await apiThanh.getBaiDangDataBase(req, res); // stream nên service pipe thẳng ra res
+});
+
 module.exports = {
   getCommentData,
   updateKpi,
@@ -49,4 +58,6 @@ module.exports = {
   getGroupsData,
   uploadFile,
   getFile,
+  getCommandDataBase,
+  getBaiDangDataBase,
 };

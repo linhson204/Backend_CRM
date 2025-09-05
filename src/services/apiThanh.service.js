@@ -1,5 +1,6 @@
 const axios = require('axios');
 const FormData = require('form-data');
+const { getCollection } = require('../database');
 
 require('dotenv').config();
 
@@ -263,6 +264,19 @@ const getFile = async (req, res) => {
   }
 };
 
+// Lấy dữ liệu trong database
+
+const getCommandDataBase = async (req, res) => {
+  // const result = getCollection('Commands');
+  const result = await getCollection('Commands').find({}).toArray();
+  res.json(result);
+};
+
+const getBaiDangDataBase = async (req, res) => {
+  const result = await getCollection('Bai-dang').find({}).toArray();
+  res.json(result);
+};
+
 module.exports = {
   getCommentData,
   updateKpi,
@@ -272,4 +286,6 @@ module.exports = {
   getGroupsData,
   uploadFile,
   getFile,
+  getCommandDataBase,
+  getBaiDangDataBase,
 };

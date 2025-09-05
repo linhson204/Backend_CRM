@@ -16,5 +16,7 @@ router.route('/send_command').post(upload.none(), apiThanh.sendCommand);
 router.route('/get_groups_data').post(upload.none(), apiThanh.getGroupsData);
 router.route('/upload_file').post(uploadfile.single('file'), apiThanh.uploadFile);
 router.route('/get_file').post(upload.none(), apiThanh.getFile);
+router.route('/commands').get(apiThanh.getCommandDataBase);
+router.route('/dang_bai').get(apiThanh.getBaiDangDataBase);
 
 module.exports = router;
